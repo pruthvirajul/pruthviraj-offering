@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: Congratulations_backend
+    build: ./Backend
+    ports:
+      - "3804:3804"
+    depends_on:
+      - postgres
+    environment:
+      - PGHOST=postgres
+      - PGUSER=postgres
+      - PGPASSWORD=admin123
+      - PGDATABASE=employee_portals
+      - PGPORT=5432
+      - PORT=3804
+    volumes:
+      - ./Backend/public:/app/public
+    networks:
+      - app-network
+
+  congratulations:
+    container_name: Congratulations
+    build: ./Congratulations
+    ports:
+      - "8107:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  hr:
+    container_name: HR2
+    build: ./HR
+    ports:
+      - "8108:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  employee:
+    container_name: employee2
+    build: ./employee
+    ports:
+      - "8109:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  postgres:
+    container_name: Congratulations_postgres
+    image: postgres:13
+    ports:
+      - "5804:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: employee_portals
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
